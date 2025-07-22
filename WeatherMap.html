@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weather Forecast App</title>
+  <style>
+    :root {
+      --bg-light: #f0f4f8;
+      --bg-dark: #1e1e2f;
+      --text-light: #000;
+      --text-dark: #fff;
+      --card-light: #fff;
+      --card-dark: #2c2c3e;
+      --primary: #3498db;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: all 0.3s;
+    }
+
+    body.dark-mode {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: var(--primary);
+    }
+
+    input {
+      padding: 10px;
+      width: 60%;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-left: 10px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .toggle-btn {
+      margin-top: 20px;
+      background: none;
+      border: 1px solid var(--primary);
+      color: var(--primary);
+    }
+
+    .forecast {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .card {
+      padding: 15px;
+      border-radius: 10px;
+      background-color: var(--card-light);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      transition: 0.3s;
+    }
+
+    body.dark-mode .card {
+      background-color: var(--card-dark);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌤️ Weather Forecast</h1>
+    <input type="text" id="locationInput" placeholder="Enter city or village name" />
+    <button onclick="getWeather()">Get Weather</button>
+    <button class="toggle-btn" onclick="toggleMode()">Toggle Theme</button>
+
+    <div id="weatherResult"></div>
+    <div class="forecast" id="forecastCards"></div>
+  </div>
+
+  <script>
+    const apiKey = 'UKWCCL9PV2FJ4ZND7U9UFXUNR';
+
+    function toggleMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    async function getWeather() {
+      const location = document.getElementById('locationInput').value || 'India';
+      const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}?unitGroup=metric&key=${apiKey}&contentType=json`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        document.getElementById('weatherResult').innerHTML = `
+          <h2>${data.resolvedAddress}</h2>
+          <p>Timezone: ${data.timezone}</p>
+          <p>Current Temp: ${data.currentConditions.temp}°C</p>
+          <p>Condition: ${data.currentConditions.conditions}</p>
+        `;
+
+        let forecastHTML = '';
+        data.days.slice(0, 7).forEach(day => {
+          forecastHTML += `
+            <div class="card">
+              <h3>${new Date(day.datetime).toDateString()}</h3>
+              <p>🌡️ Temp: ${day.temp}°C</p>
+              <p>🌤️ Condition: ${day.conditions}</p>
+              <p>🌬️ Wind: ${day.windspeed} km/h</p>
+            </div>
+          `;
+        });
+        document.getElementById('forecastCards').innerHTML = forecastHTML;
+      } catch (error) {
+        document.getElementById('weatherResult').innerHTML = `<p style="color:red">City not found or API error.</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
